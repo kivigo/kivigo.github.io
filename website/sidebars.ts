@@ -53,6 +53,7 @@ const sidebars: SidebarsConfig = {
         'encoders/json',
         'encoders/yaml',
         'encoders/encrypt',
+        'encoders/custom-encoder'
       ],
     },
     {
