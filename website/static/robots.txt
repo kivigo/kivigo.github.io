@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-
+Sitemap: https://kivigo.github.io/sitemap.xml
 # Algolia-Crawler-Verif: E7BDC0903F60D7AB
-
-Sitemap: https://kivigo.github.io/kivigo/sitemap.xml
