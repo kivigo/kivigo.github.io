@@ -59,6 +59,16 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'KeyBuilder',
+      items: [
+        'keybuilder/overview',
+        'keybuilder/dsl-details',
+        'keybuilder/advanced-usage',
+        'keybuilder/registry',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Advanced',
       items: [
         'advanced/health-checks',

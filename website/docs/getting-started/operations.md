@@ -8,7 +8,7 @@ Learn about all the operations available in KiviGo for managing your key-value d
 
 ## Setting Values
 
-Store data using the `Set` method:
+Store data using the `Set` method. This method saves a value under a given key.
 
 ```go
 // Simple values
@@ -35,7 +35,7 @@ err := client.Set(ctx, "settings", map[string]interface{}{
 
 ## Getting Values
 
-Retrieve data using the `Get` method:
+Retrieve data using the `Get` method. This method loads the value for a given key and decodes it into the provided variable.
 
 ```go
 // Get into a variable of the correct type
@@ -57,6 +57,8 @@ err := client.Get(ctx, "settings", &settings)
 
 ### Handling Missing Keys
 
+Handle missing keys by checking for the `ErrNotFound` error. This allows you to distinguish between a missing key and other errors.
+
 ```go
 import "github.com/kivigo/kivigo/pkg/errs"
 
@@ -74,7 +76,7 @@ if err != nil {
 
 ## Listing Keys
 
-Find keys using patterns with the `List` method:
+Find keys using patterns with the `List` method. This method returns all keys matching a given prefix.
 
 ```go
 // List all keys with a prefix
@@ -91,6 +93,8 @@ allKeys, err := client.List(ctx, "")
 
 ### Working with Listed Keys
 
+Get all user data by listing keys and retrieving each value. This pattern is useful for batch processing or iterating over a group of related keys.
+
 ```go
 // Get all user data
 userKeys, err := client.List(ctx, "user:")
@@ -105,14 +109,13 @@ for _, key := range userKeys {
         log.Printf("Failed to get %s: %v", key, err)
         continue
     }
-    
     fmt.Printf("User %s: %+v\n", key, user)
 }
 ```
 
 ## Deleting Values
 
-Remove data using the `Delete` method:
+Remove data using the `Delete` method. This method deletes the value for a given key.
 
 ```go
 // Delete a single key
@@ -129,6 +132,8 @@ for _, key := range keysToDelete {
 ```
 
 ### Bulk Deletion
+
+Delete all temporary keys by listing them and deleting each one. This is useful for cleaning up groups of related keys.
 
 ```go
 // Delete all temporary keys
@@ -151,8 +156,11 @@ Check if keys exist before operating on them:
 
 ### Single Key Check
 
+Check if a single key exists in the store using the `HasKey` method. Returns `true` if the key exists, `false` otherwise. Returns an error if the key is empty or if there is a backend issue.
+
+Example usage:
+
 ```go
-// Check if a single key exists
 exists, err := client.HasKey(ctx, "user:1")
 if err != nil {
     log.Fatal(err)
@@ -169,33 +177,43 @@ if exists {
 
 ### Multiple Key Check
 
+Check if multiple keys exist in a single operation using the `HasKeys` method. This method returns `true` only if **all** specified keys exist in the store. If at least one key is missing, the result will be `false`. If the list of keys is empty, an error is returned.
+
+Example usage:
+
 ```go
-// Check if all keys exist
 keys := []string{"user:1", "user:2", "user:3"}
 allExist, err := client.HasKeys(ctx, keys)
 if err != nil {
-    log.Fatal(err)
+    log.Fatal(err) // Error if the list is empty or backend issue
 }
 
 if allExist {
     fmt.Println("All users exist")
+    // You can safely perform batch operations
 } else {
     fmt.Println("Some users are missing")
-    
-    // Find which ones are missing
+    // To efficiently find missing keys:
+    missing := make([]string, 0, len(keys))
     for _, key := range keys {
         exists, err := client.HasKey(ctx, key)
         if err != nil {
+            log.Printf("Error checking %s: %v", key, err)
             continue
         }
         if !exists {
-            fmt.Printf("Missing: %s\n", key)
+            missing = append(missing, key)
         }
     }
+    fmt.Printf("Missing keys: %v\n", missing)
 }
 ```
 
 ### Custom Key Matching
+
+Match keys using a custom function with the `MatchKeys` method. This method lists all keys with a given prefix and applies your custom logic to determine if a condition is met. Returns `true` if your function returns true, otherwise false. Returns an error if the function is nil or listing keys fails.
+
+Example usage:
 
 ```go
 // Custom key matching with a prefix
@@ -218,7 +236,6 @@ match, err = client.MatchKeys(ctx, "user:", func(keys []string) (bool, error) {
     // Check if we have both admin and regular users
     hasAdmin := false
     hasRegular := false
-    
     for _, key := range keys {
         if strings.Contains(key, "admin") {
             hasAdmin = true
@@ -226,14 +243,13 @@ match, err = client.MatchKeys(ctx, "user:", func(keys []string) (bool, error) {
             hasRegular = true
         }
     }
-    
     return hasAdmin && hasRegular, nil
 })
 ```
 
 ## Working with Raw Data
 
-For advanced use cases, you can work with raw byte data:
+For advanced use cases, you can work with raw byte data using the `SetRaw` and `GetRaw` methods. These methods allow you to store and retrieve binary data directly.
 
 ### Setting Raw Data
 
@@ -257,7 +273,7 @@ fmt.Printf("Raw data: %x\n", rawData)
 
 ## Batch Operations
 
-Some backends support efficient batch operations:
+Some backends support efficient batch operations using the `BatchSetRaw`, `BatchGetRaw`, and `BatchDelete` methods. These allow you to set, get, or delete multiple keys in a single call.
 
 ### Batch Set
 
@@ -306,7 +322,7 @@ if err != nil {
 
 ### Key Naming Conventions
 
-Use consistent key naming patterns for better performance:
+Use consistent key naming patterns for better performance and easier management.
 
 ```go
 // Good: Hierarchical structure
@@ -327,6 +343,8 @@ Use consistent key naming patterns for better performance:
 
 ### Efficient Listing
 
+Use specific prefixes for efficient key listing. Listing all keys and filtering manually is less efficient and should be avoided for large datasets.
+
 ```go
 // Efficient: Use specific prefixes
 userKeys, err := client.List(ctx, "user:")
@@ -339,7 +357,7 @@ allKeys, err := client.List(ctx, "")
 
 ### Context Usage
 
-Always use appropriate context timeouts:
+Always use appropriate context timeouts to avoid hanging operations and improve reliability.
 
 ```go
 // Set operation timeout
