@@ -64,6 +64,7 @@ const sidebars: SidebarsConfig = {
         'keybuilder/overview',
         'keybuilder/dsl-details',
         'keybuilder/advanced-usage',
+        'keybuilder/dynamic-templates',
         'keybuilder/registry',
       ],
     },
